@@ -15,6 +15,8 @@ namespace RentApplication.Models
         public int CustomerId { get; set; }
         public decimal Price { get; set; }
         public DateTime? Date { get; set; }
+        public DateTime? DateStart { get; set; }
+        public DateTime? DateEnd { get; set; }
         public string Status { get; set; }
     }
 }

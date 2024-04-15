@@ -10,6 +10,6 @@ namespace RentApplication.Models
     {
         [Key]
         public int Id { get; set; }
-        public int AppartamentId { get; set; }
+        public string ImagePath { get; set; }
     }
 }
