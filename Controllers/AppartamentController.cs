@@ -81,7 +81,24 @@ namespace RentApplication.Controllers
             return Ok(new Response { Status = "Success", Message = "Announcement created successfully!" });
 
         }
+        [HttpGet]
+        [Route("getAppartaments")]
+        public IActionResult getAppartaments()
+        {
+            List<Appartament> appartaments = db.Appartaments.ToList();
+            return Ok(appartaments);
+        }
 
+        [HttpGet("{appartamentId}")]
+        [Route("getAppartament")]
+        public IActionResult getAppartament(int appartamentId)
+        {
+            Appartament appartament = db.Appartaments
+                .Where(a => a.Id == appartamentId)
+                .FirstOrDefault();
+
+            return Ok(appartament);
+        }
         public async Task<string> createImageAsync(string imageBase64, string imageName)
         {
             string base64String = imageBase64;
@@ -105,6 +122,45 @@ namespace RentApplication.Controllers
             {
                 // Если произошла ошибка, возвращаем ошибку сервера
                 return "Fail";
+            }
+        }
+        [HttpGet("getimage/{imageName}")]
+        public async Task<IActionResult> GetImage(string imageName)
+        {
+            string uploadsFolder = Path.Combine(_httpContextAccessor.HttpContext.Request.PathBase.Value, "uploads");
+            string imagePath = Path.Combine(uploadsFolder, imageName);
+
+            return await GetImageBytesAsync(imagePath);
+        }
+        public async Task<IActionResult> GetImageBytesAsync(string imagePath)
+        {
+            try
+            {
+                // Проверяем, существует ли файл изображения
+                if (!System.IO.File.Exists(imagePath))
+                {
+                    // Если файл не существует, возвращаем null или выбрасываем исключение
+                    // В зависимости от ваших потребностей
+                    return null;
+                }
+
+                byte[] imageBytes;
+                using (FileStream fs = new FileStream(imagePath, FileMode.Open))
+                {
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        await fs.CopyToAsync(ms);
+                        imageBytes = ms.ToArray();
+                    }
+                }
+
+                // Возвращаем изображение в виде массива байтов
+                return new FileContentResult(imageBytes, "image/jpeg"); // Или другой MIME-тип, в зависимости от типа изображения
+            }
+            catch (Exception ex)
+            {
+                // Если произошла ошибка, возвращаем ошибку сервера
+                return StatusCode(500, "Internal server error");
             }
         }
     }
