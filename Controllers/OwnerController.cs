@@ -40,16 +40,17 @@ namespace RentApplication.Controllers
             return Ok(appartaments);
         }
 
-        [HttpPost("{appartamentId}")]
+        [HttpPost]
         [Route("removeAnnouncement")]
         public async Task<IActionResult> removeAnnouncement(int appartamentId)
         {
             Appartament appartament = db.Appartaments.FindAsync(appartamentId).Result;
             House house = db.Houses.FindAsync(appartament.HouseId).Result;
             Owner owner = db.Owners.FindAsync(appartament.OwnerId).Result;
-            Image image = db.Images.FindAsync(appartament.ImageId).Result;
+            List<ImageAppartament> imageApps = db.ImageAppartaments.Where(i => i.AppartamentId == appartament.Id).ToList();
+            List<Image> images = db.Images.Where(image => imageApps.Select(ia => ia.ImageId).Contains(image.Id)).ToList();
 
-            if(db.Appartaments.Where(a => a.OwnerId == appartament.OwnerId).Count() == 1)
+            if (db.Appartaments.Where(a => a.OwnerId == appartament.OwnerId).Count() == 1)
             {
                 db.Owners.Remove(owner);
                 await db.SaveChangesAsync();
@@ -57,7 +58,9 @@ namespace RentApplication.Controllers
 
             db.Houses.Remove(house);
             await db.SaveChangesAsync();
-            db.Images.Remove(image);
+            db.ImageAppartaments.RemoveRange(imageApps);
+            await db.SaveChangesAsync();
+            db.Images.RemoveRange(images);
             await db.SaveChangesAsync();
 
             if (appartament == null)

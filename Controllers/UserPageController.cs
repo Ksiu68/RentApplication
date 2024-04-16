@@ -59,7 +59,7 @@ namespace RentApplication.Controllers
             };
             db.Favorites.Add(favoriteAppartament);
             await db.SaveChangesAsync();
-            return Ok(new Response { Status = "Success", Message = "Order was created successfully!" });
+            return Ok(new Response { Status = "Success", Message = "Added to favorite successfully!" });
         }
     }
 }

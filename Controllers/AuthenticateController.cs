@@ -81,7 +81,9 @@ namespace RentApplication.Controllers
             {
                 Email = model.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.Username
+                UserName = model.Username,
+                FIO = model.FIO,
+                PhoneNumber = model.Phone
             };
             var result = await userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
@@ -102,7 +104,9 @@ namespace RentApplication.Controllers
             {
                 Email = model.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.Username
+                UserName = model.Username,
+                FIO = model.FIO,
+                PhoneNumber = model.Phone
             };
             var result = await userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)

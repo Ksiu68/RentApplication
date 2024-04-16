@@ -54,13 +54,21 @@ namespace RentApplication.Controllers
             if (houseResult == null) return BadRequest(new Response { Status = "Bad", Message = "House was not created!" });
             var userName = User.FindFirstValue(ClaimTypes.Name);
             var user = await userManager.FindByNameAsync(userName);
-            Owner owner = new Owner()
+            Owner owner = null;
+            if (db.Owners.Where(o => o.UserId.Equals(user.Id)).Count() != 1)
             {
-                UserId = user.Id
-            };
-            var ownerResult = await db.Owners.AddAsync(owner);
-            await db.SaveChangesAsync();
-            if (ownerResult == null) return BadRequest(new Response { Status = "Bad", Message = "Owner was not created!" });
+                owner = new Owner()
+                {
+                    UserId = user.Id
+                };
+                var ownerResult = await db.Owners.AddAsync(owner);
+                await db.SaveChangesAsync();
+                if (ownerResult == null) return BadRequest(new Response { Status = "Bad", Message = "Owner was not created!" });
+            }
+            else
+            {
+                owner = db.Owners.FirstOrDefault(o => o.UserId.Equals(user.Id));
+            }
             Appartament appartament = new Appartament()
             {
                 Description = model.Description,
@@ -72,11 +80,17 @@ namespace RentApplication.Controllers
                 Floor = model.Floor,
                 Price = model.Price,
                 HouseId = house.Id,
-                ImageId = image.Id,
                 OwnerId = owner.Id
 
             };
             var appartamentResult = await db.Appartaments.AddAsync(appartament);
+            await db.SaveChangesAsync();
+            ImageAppartament imageAppartament = new ImageAppartament()
+            {
+                AppartamentId = appartament.Id,
+                ImageId = image.Id
+            };
+            var ImageResult = await db.ImageAppartaments.AddAsync(imageAppartament);
             await db.SaveChangesAsync();
             return Ok(new Response { Status = "Success", Message = "Announcement created successfully!" });
 
@@ -89,7 +103,7 @@ namespace RentApplication.Controllers
             return Ok(appartaments);
         }
 
-        [HttpGet("{appartamentId}")]
+        [HttpGet]
         [Route("getAppartament")]
         public IActionResult getAppartament(int appartamentId)
         {

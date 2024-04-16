@@ -17,5 +17,11 @@ namespace RentApplication.Models.EF
 
         [Required(ErrorMessage = "Password is required")]
         public string Password { get; set; }
+
+        [Required(ErrorMessage = "Lastname is required")]
+        public string FIO { get; set; }
+
+        [Required(ErrorMessage = "Phone is required")]
+        public string Phone { get; set; }
     }
 }

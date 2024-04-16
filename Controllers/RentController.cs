@@ -30,7 +30,7 @@ namespace RentApplication.Controllers
         }
 
         [HttpPost("{apartamentId}")]
-        [Route("rent")]
+        [Route("makeRent")]
         public async Task<IActionResult> makeRent(int appartamentId, [FromBody] Calendar calendar)
         {
             Appartament appartament = db.Appartaments.FindAsync(appartamentId).Result;
