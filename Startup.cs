@@ -71,7 +71,7 @@ namespace RentApplication
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ApplicationContext dbContext)
         {
             if (env.IsDevelopment())
             {
@@ -93,6 +93,23 @@ namespace RentApplication
             {
                 endpoints.MapControllers();
             });
+             if (!dbContext.Ameneties.Any())
+            {
+                dbContext.Ameneties.AddRange(new List<Amenetie>
+                {
+                    new Amenetie { Name = "Посудомоечная машина" },
+                    new Amenetie { Name = "Интернет" },
+                    new Amenetie { Name = "Телевизор" },
+                    new Amenetie { Name = "Можно курить" },
+                    new Amenetie { Name = "Стиральная машина"},
+                    new Amenetie { Name = "Микроволновка"},
+                    new Amenetie { Name = "Кондиционер"},
+                    new Amenetie { Name = "Можно с детьми"},
+                    new Amenetie { Name = "Можно с животными"}
+                });
+
+                dbContext.SaveChanges();
+            }
         }
     }
 }

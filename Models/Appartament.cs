@@ -13,11 +13,11 @@ namespace RentApplication.Models
         public int HouseId { get; set; }
         public int OwnerId { get; set; }
         public string Description { get; set; }
-        public string Balcony { get; set; }
-        public string Repair { get; set; }
-        public string Wifi { get; set; }
-        public int Area { get; set; }
+        public string Type {get;set;}
+        public string ReferenceTo3D {get;set;}
+        public int countOfBedrooms {get;set;}
         public int CountOfRooms { get; set; }
+        public int Area { get; set;}
         public int Floor { get; set; }
         public decimal Price { get; set; }
     }

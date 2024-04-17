@@ -18,7 +18,9 @@ namespace RentApplication.Models
         public DbSet<Owner> Owners { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<ImageAppartament> ImageAppartaments { get; set; }
+        public DbSet<Amenetie> Ameneties { get; set; }
 
+        public DbSet<AppartamentAmenetie> AppartamentAmeneties { get; set; }
         public DbSet<Appartament> Appartaments { get; set; }
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
            : base(options)

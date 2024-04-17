@@ -72,9 +72,6 @@ namespace RentApplication.Controllers
             Appartament appartament = new Appartament()
             {
                 Description = model.Description,
-                Balcony = model.Balcony,
-                Repair = model.Repair,
-                Wifi = model.Wifi,
                 Area = model.Area,
                 CountOfRooms = model.CountOfRooms,
                 Floor = model.Floor,
