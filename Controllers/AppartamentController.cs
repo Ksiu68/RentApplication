@@ -112,7 +112,7 @@ namespace RentApplication.Controllers
                  AppartamentAmenetie appartamentAmenetie = new AppartamentAmenetie()
                 {
                     AppartamentId = appartament.Id,
-                    AmenetieId = ameneties.FirstOrDefault(x => x.Value.Equals(model.Amenities)).Key
+                    AmenetieId = ameneties.FirstOrDefault(x => x.Value.Equals(amenetie)).Key
                 };
                 var amenetieResult = await db.AppartamentAmeneties.AddAsync(appartamentAmenetie);
                 if (amenetieResult == null) return BadRequest(new Response { Status = "Bad", Message = "Amenetie was not created!" });

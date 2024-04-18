@@ -8,9 +8,7 @@ namespace RentApplication.Models
 {
     public class AppartamentAmenetie
     {
-        [Key]
-        public int AppartamentId { get; set; }
-        [Key]
+        public int AppartamentId { get; set; }  
         public int AmenetieId { get; set; }
     }
 }

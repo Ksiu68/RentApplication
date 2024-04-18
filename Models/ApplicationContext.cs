@@ -30,6 +30,10 @@ namespace RentApplication.Models
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.Entity<AppartamentAmenetie>()
+            .HasKey(o => new { o.AppartamentId, o.AmenetieId });
+            builder.Entity<ImageAppartament>()
+            .HasKey(o => new { o.AppartamentId, o.ImageId });
         }
     }
 }
