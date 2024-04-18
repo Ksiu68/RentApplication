@@ -58,7 +58,12 @@ namespace RentApplication.Controllers
                 Interom = model.Interom,
                 Parking = model.Parking,
                 Playground = model.Playgroung,
-                NumberHouse = model.NumberHouse
+                NumberHouse = model.NumberHouse,
+                YearOfConstruction = model.YearOfConstruction,
+                Area = model.HouseArea,
+                NumberOfFloors = model.NumberOfFloors,
+                Metro = model.Metro,
+                DistanceToMetro = model.DistanceToMetro
             };
             var houseResult = await db.Houses.AddAsync(house);
             await db.SaveChangesAsync();
@@ -88,8 +93,10 @@ namespace RentApplication.Controllers
                 Floor = model.Floor,
                 Price = model.Price,
                 HouseId = house.Id,
-                OwnerId = owner.Id
-
+                OwnerId = owner.Id,
+                Type = model.Type,
+                ReferenceTo3D = model.ReferenceTo3D,
+                countOfBedrooms = model.CountOfBedrooms
             };
             var appartamentResult = await db.Appartaments.AddAsync(appartament);
             await db.SaveChangesAsync();
@@ -100,6 +107,17 @@ namespace RentApplication.Controllers
             };
             var ImageResult = await db.ImageAppartaments.AddAsync(imageAppartament);
             await db.SaveChangesAsync();
+            if (ImageResult == null) return BadRequest(new Response { Status = "Bad", Message = "Image was not created!" });
+            foreach(string amenetie in model.Amenities){
+                 AppartamentAmenetie appartamentAmenetie = new AppartamentAmenetie()
+                {
+                    AppartamentId = appartament.Id,
+                    AmenetieId = ameneties.FirstOrDefault(x => x.Value.Equals(model.Amenities)).Key
+                };
+                var amenetieResult = await db.AppartamentAmeneties.AddAsync(appartamentAmenetie);
+                if (amenetieResult == null) return BadRequest(new Response { Status = "Bad", Message = "Amenetie was not created!" });
+                await db.SaveChangesAsync();
+            }
             return Ok(new Response { Status = "Success", Message = "Announcement created successfully!" });
 
         }

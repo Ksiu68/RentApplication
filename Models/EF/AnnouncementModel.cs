@@ -21,7 +21,7 @@ namespace RentApplication.Models.EF
         public string Metro {get;set;}
         public string DistanceToMetro {get;set;}
         public string YearOfConstruction {get;set;}
-        public string CountOfBedrooms {get;set;}
+        public int CountOfBedrooms {get;set;}
 
         [Required(ErrorMessage = "Address is required")]
         public string Address { get; set; }

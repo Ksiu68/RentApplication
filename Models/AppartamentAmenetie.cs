@@ -10,6 +10,7 @@ namespace RentApplication.Models
     {
         [Key]
         public int AppartamentId { get; set; }
+        [Key]
         public int AmenetieId { get; set; }
     }
 }
