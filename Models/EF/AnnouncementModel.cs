@@ -15,6 +15,14 @@ namespace RentApplication.Models.EF
         public string Interom { get; set; }
         public string Elevator { get; set; }
 
+        public string Type {get; set;}
+        public string ReferenceTo3D {get;set;}
+        public string NumberOfFloors {get;set;}
+        public string Metro {get;set;}
+        public string DistanceToMetro {get;set;}
+        public string YearOfConstruction {get;set;}
+        public string CountOfBedrooms {get;set;}
+
         [Required(ErrorMessage = "Address is required")]
         public string Address { get; set; }
 
@@ -27,6 +35,8 @@ namespace RentApplication.Models.EF
 
         [Required(ErrorMessage = "Area is required")]
         public int Area { get; set; }
+         [Required(ErrorMessage = "HouseArea is required")]
+        public string HouseArea { get; set; }
 
         [Required(ErrorMessage = "Count Of Rooms is required")]
         public int CountOfRooms { get; set; }
@@ -34,11 +44,10 @@ namespace RentApplication.Models.EF
         [Required(ErrorMessage = "Price is required")]
         public decimal Price { get; set; }
 
-        public string Wifi { get; set; }
-
         [Required(ErrorMessage = "Password is required")]
         public string ImageBase64 { get; set; }
         
         public string ImageName { get; set; }
+        public List<string> Amenities {get;set;} 
     }
 }

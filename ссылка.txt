@@ -1,1 +1,31 @@
 https://www.c-sharpcorner.com/article/authentication-and-authorization-in-asp-net-core-web-api-with-json-web-tokens/
+{
+    "numberhouse": 1,
+    "type" : "комната",
+    "referenceTo3D" : "ip-address",
+    "playgroung" : "yes", 
+    "parking" : "yes",
+    "interom":  "yes",
+    "elevator" : "yes",
+    "houseArea" : "Фрунзенский",
+    "NumberOfFloors" : "9",
+    "Metro" : "Кунцевщина",
+    "DistanceToMetro" : "20",
+    "yearOfConstruction" : "1989",
+    "address" : "ул. Бобруйская",
+    "floor" : 5,
+    "description" : "хорошая квартира",
+    "area" : 35,
+    "countOfRooms" : 3,
+    "countOfBedrooms" : 2,
+    "price" : 200,
+    "amenities": [
+    "Посудомоечная машина",
+    "Интернет",
+    "Телевизор",
+    "Можно курить"
+    ],
+    "imageName" : "firstPic",
+    "imageBase64": ""
+
+}

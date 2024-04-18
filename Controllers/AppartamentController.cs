@@ -18,6 +18,17 @@ namespace RentApplication.Controllers
     [ApiController]
     public class AppartamentController : Controller
     {
+        private Dictionary<int, string> ameneties = new Dictionary<int, string>(){
+            { 1, "Посудомоечная машина" },
+            { 2, "Интернет" },
+            { 3, "Телевизор" },
+            { 4, "Можно курить"},
+            { 5, "Стиральная машина"},
+            { 6, "Микроволновка"},
+            { 7, "Кондиционер"},
+            { 8, "Можно с детьми"},
+            { 9, "Можно с животными"}
+        };
         private readonly UserManager<User> userManager;
         private ApplicationContext db;
         private readonly IHttpContextAccessor _httpContextAccessor;
