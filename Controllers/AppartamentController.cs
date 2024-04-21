@@ -123,10 +123,23 @@ namespace RentApplication.Controllers
         }
         [HttpGet]
         [Route("getAppartaments")]
-        public IActionResult getAppartaments()
+        public IActionResult getAppartaments(int? countOfRooms = null, decimal? maxPrice = null)
         {
+            IQueryable<Appartament> query = db.Appartaments;
+
+            // Применяем фильтры, если они указаны
+            if (countOfRooms.HasValue)
+            {
+                query = query.Where(a => a.CountOfRooms == countOfRooms);
+            }
+
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(a => a.Price <= maxPrice);
+            }
+
             List<AppartamentDTO> appartamentDTOs = new List<AppartamentDTO>();
-            List<Appartament> appartaments = db.Appartaments.ToList();
+            List<Appartament> appartaments = query.ToList();
             foreach(Appartament appartament in appartaments){
                 House house = db.Houses
                     .Where(h => h.Id == appartament.HouseId)
@@ -164,7 +177,56 @@ namespace RentApplication.Controllers
         }
 
         [HttpGet]
-        [Route("getAppartament")]
+        [Route("searchAppartament/{text}")]
+        public IActionResult getAppartament(string text)
+        {
+            string searchLower = text.ToLower();
+            List<AppartamentDTO> appartamentDTOs = new List<AppartamentDTO>();
+            List<House> houses = db.Houses
+                    .Where(h => h.Area.ToLower().Contains(searchLower) || h.Address.ToLower().Contains(searchLower))
+                    .ToList();
+
+            if (houses == null)
+            {
+                return StatusCode(500, "House data not found."); 
+            }
+            foreach(House house in houses){
+                Appartament appartament = db.Appartaments
+                .Where(a => a.HouseId == house.Id)
+                .FirstOrDefault();
+                if (appartament == null)
+                {
+                    return StatusCode(500, "Appartament data not found."); 
+                }
+                Owner owner = db.Owners
+                        .Where(o => o.Id == appartament.OwnerId)
+                        .FirstOrDefault();
+                if (owner == null)
+                {
+                    return StatusCode(500, "Owner data not found."); 
+                }
+                User user = db.Users
+                        .Where(u => u.Id == owner.UserId)
+                        .FirstOrDefault();
+                if (user == null)
+                {
+                    return StatusCode(500, "User data not found.");
+                }
+                List<ImageAppartament> imageAppartament = db.ImageAppartaments
+                        .Where(i => i.AppartamentId == appartament.Id)
+                        .ToList();
+                List<string> imageNames = db.Images
+                        .Where(image => imageAppartament.Select(i => i.ImageId).Contains(image.Id))
+                        .Select(image => image.ImagePath.Replace("uploads\\", ""))
+                        .ToList();
+                AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, user, imageNames);
+                appartamentDTOs.Add(appartamentDTO);
+            }
+            return Ok(appartamentDTOs);
+        }
+
+        [HttpGet]
+        [Route("getAppartament/{appartamentId}")]
         public IActionResult getAppartament(int appartamentId)
         {
             Appartament appartament = db.Appartaments

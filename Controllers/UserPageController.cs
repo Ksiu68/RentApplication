@@ -61,5 +61,18 @@ namespace RentApplication.Controllers
             await db.SaveChangesAsync();
             return Ok(new Response { Status = "Success", Message = "Added to favorite successfully!" });
         }
+
+        [HttpPost("{apartamentId}")]
+        [Route("removeToFavorite")]
+        public async Task<IActionResult> removeFromFavorite(int appartamentId)
+        {
+            Favorite favoriteAppartament = db.Favorites
+                .Where(f => f.AppartamentId == appartamentId)
+                .FirstOrDefault();
+            db.Favorites.Remove(favoriteAppartament);
+            await db.SaveChangesAsync();
+            return Ok(new Response { Status = "Success", Message = "Removed from favorite successfully!" });
+        }
+
     }
 }
