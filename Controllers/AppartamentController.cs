@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 
 namespace RentApplication.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class AppartamentController : Controller
@@ -38,6 +37,7 @@ namespace RentApplication.Controllers
             this.userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
         }
+        [Authorize]
         [HttpPost]
         [Route("make")]
         public async Task<IActionResult> makeAnnouncement([FromBody] AnnouncementModel model)
