@@ -125,8 +125,42 @@ namespace RentApplication.Controllers
         [Route("getAppartaments")]
         public IActionResult getAppartaments()
         {
+            List<AppartamentDTO> appartamentDTOs = new List<AppartamentDTO>();
             List<Appartament> appartaments = db.Appartaments.ToList();
-            return Ok(appartaments);
+            foreach(Appartament appartament in appartaments){
+                House house = db.Houses
+                    .Where(h => h.Id == appartament.HouseId)
+                    .FirstOrDefault();
+
+                if (house == null)
+                {
+                    return StatusCode(500, "House data not found."); // Вернуть 500 Internal Server Error, если данные о доме не найдены
+                }
+                Owner owner = db.Owners
+                        .Where(o => o.Id == appartament.OwnerId)
+                        .FirstOrDefault();
+                if (owner == null)
+                {
+                    return StatusCode(500, "Owner data not found."); // Вернуть 500 Internal Server Error, если данные о доме не найдены
+                }
+                User user = db.Users
+                        .Where(u => u.Id == owner.UserId)
+                        .FirstOrDefault();
+                if (user == null)
+                {
+                    return StatusCode(500, "User data not found."); // Вернуть 500 Internal Server Error, если данные о доме не найдены
+                }
+                List<ImageAppartament> imageAppartament = db.ImageAppartaments
+                        .Where(i => i.AppartamentId == appartament.Id)
+                        .ToList();
+                List<string> imageNames = db.Images
+                        .Where(image => imageAppartament.Select(i => i.ImageId).Contains(image.Id))
+                        .Select(image => image.ImagePath.Replace("uploads\\", ""))
+                        .ToList();
+                AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, user, imageNames);
+                appartamentDTOs.Add(appartamentDTO);
+            }
+            return Ok(appartamentDTOs);
         }
 
         [HttpGet]
@@ -136,8 +170,43 @@ namespace RentApplication.Controllers
             Appartament appartament = db.Appartaments
                 .Where(a => a.Id == appartamentId)
                 .FirstOrDefault();
+            if (appartament == null)
+                {
+                    return NotFound(); // Вернуть 404 Not Found, если квартира не найдена
+                }
 
-            return Ok(appartament);
+                // Загрузить данные о доме для данной квартиры
+            House house = db.Houses
+                    .Where(h => h.Id == appartament.HouseId)
+                    .FirstOrDefault();
+
+            if (house == null)
+            {
+                return StatusCode(500, "House data not found."); // Вернуть 500 Internal Server Error, если данные о доме не найдены
+            }
+            Owner owner = db.Owners
+                    .Where(o => o.Id == appartament.OwnerId)
+                    .FirstOrDefault();
+            if (owner == null)
+            {
+                return StatusCode(500, "Owner data not found."); // Вернуть 500 Internal Server Error, если данные о доме не найдены
+            }
+            User user = db.Users
+                    .Where(u => u.Id == owner.UserId)
+                    .FirstOrDefault();
+            if (user == null)
+            {
+                return StatusCode(500, "User data not found."); // Вернуть 500 Internal Server Error, если данные о доме не найдены
+            }
+            List<ImageAppartament> imageAppartament = db.ImageAppartaments
+                    .Where(i => i.AppartamentId == appartament.Id)
+                    .ToList();
+            List<string> imageNames = db.Images
+                    .Where(image => imageAppartament.Select(i => i.ImageId).Contains(image.Id))
+                     .Select(image => image.ImagePath.Replace("uploads\\", ""))
+                    .ToList();
+            AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, user, imageNames);
+            return Ok(appartamentDTO);
         }
         public async Task<string> createImageAsync(string imageBase64, string imageName)
         {
