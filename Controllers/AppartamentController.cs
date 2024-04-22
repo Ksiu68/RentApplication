@@ -175,7 +175,7 @@ namespace RentApplication.Controllers
                 List<string> ameneties = db.Ameneties
                         .Where(a => appartamentAmeneties.Select(aa => aa.AmenetieId).Contains(a.Id))
                         .Select(a => a.Name).ToList();
-                AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, user, imageNames);
+                AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, user, imageNames, ameneties);
                 appartamentDTOs.Add(appartamentDTO);
             }
             return Ok(appartamentDTOs);
@@ -224,7 +224,12 @@ namespace RentApplication.Controllers
                         .Where(image => imageAppartament.Select(i => i.ImageId).Contains(image.Id))
                         .Select(image => image.ImagePath.Replace("uploads\\", ""))
                         .ToList();
-                AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, user, imageNames);
+                List<AppartamentAmenetie> appartamentAmeneties = db.AppartamentAmeneties
+                        .Where(amenetie => amenetie.AppartamentId == appartament.Id).ToList();
+                List<string> ameneties = db.Ameneties
+                        .Where(a => appartamentAmeneties.Select(aa => aa.AmenetieId).Contains(a.Id))
+                        .Select(a => a.Name).ToList();
+                AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, user, imageNames, ameneties);
                 appartamentDTOs.Add(appartamentDTO);
             }
             return Ok(appartamentDTOs);
@@ -272,7 +277,12 @@ namespace RentApplication.Controllers
                     .Where(image => imageAppartament.Select(i => i.ImageId).Contains(image.Id))
                      .Select(image => image.ImagePath.Replace("uploads\\", ""))
                     .ToList();
-            AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, user, imageNames);
+            List<AppartamentAmenetie> appartamentAmeneties = db.AppartamentAmeneties
+                        .Where(amenetie => amenetie.AppartamentId == appartament.Id).ToList();
+            List<string> ameneties = db.Ameneties
+                        .Where(a => appartamentAmeneties.Select(aa => aa.AmenetieId).Contains(a.Id))
+                        .Select(a => a.Name).ToList();
+            AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, user, imageNames, ameneties);
             return Ok(appartamentDTO);
         }
         public async Task<string> createImageAsync(string imageBase64, string imageName)

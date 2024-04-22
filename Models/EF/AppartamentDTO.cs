@@ -11,7 +11,15 @@ public class AppartamentDTO : Appartament
     public List<string> imageNames {get; set;}
 
     public List<string> ameneties {get;set;}
-    public AppartamentDTO(Appartament appartament, House house, User user, List<string> imageNames)
+    public string elevator { get; set; }
+    public string interom { get; set; }
+    public string parking { get; set; }
+    public string playground { get; set; }
+    public string houseArea { get; set; }
+    public string numberOfFloors { get; set; }
+    public string yearOfConstruction{get;set;}
+    public string FIO {get; set;}
+    public AppartamentDTO(Appartament appartament, House house, User user, List<string> imageNames, List<string> ameneties)
     {
         Id = appartament.Id;      
         Description = appartament.Description;
@@ -27,6 +35,15 @@ public class AppartamentDTO : Appartament
         numberHouse = house.NumberHouse;
         address = house.Address;
         phoneNumber = user.PhoneNumber;
+        elevator = house.Elevator;
+        interom = house.Interom;
+        parking = house.Parking;
+        playground = house.Playground;
+        houseArea = house.Area;
+        numberOfFloors = house.NumberOfFloors;
+        yearOfConstruction = house.YearOfConstruction;
+        FIO = user.FIO;
         this.imageNames = imageNames;
+        this.ameneties = ameneties;
     }
 }
