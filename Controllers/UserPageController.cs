@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 
 namespace RentApplication.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UserPageController : Controller
@@ -28,7 +27,7 @@ namespace RentApplication.Controllers
             this.userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
         }
-
+        [Authorize]
         [HttpPost("{apartamentId}")]
         [Route("addToFavorite")]
         public async Task<IActionResult> addToFavorite(int appartamentId)
@@ -61,7 +60,7 @@ namespace RentApplication.Controllers
             await db.SaveChangesAsync();
             return Ok(new Response { Status = "Success", Message = "Added to favorite successfully!" });
         }
-
+        [Authorize]
         [HttpPost("{apartamentId}")]
         [Route("removeToFavorite")]
         public async Task<IActionResult> removeFromFavorite(int appartamentId)

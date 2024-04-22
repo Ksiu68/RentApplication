@@ -7,9 +7,10 @@ public class AppartamentDTO : Appartament
     public string distanceToMetro { get; set; }
     public string address { get; set; }
     public string phoneNumber { get; set; }
-    
     public int numberHouse { get; set; }
     public List<string> imageNames {get; set;}
+
+    public List<string> amanities {get;set;}
     public AppartamentDTO(Appartament appartament, House house, User user, List<string> imageNames)
     {
         Id = appartament.Id;      

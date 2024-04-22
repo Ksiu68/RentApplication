@@ -170,6 +170,11 @@ namespace RentApplication.Controllers
                         .Where(image => imageAppartament.Select(i => i.ImageId).Contains(image.Id))
                         .Select(image => image.ImagePath.Replace("uploads\\", ""))
                         .ToList();
+                List<AppartamentAmenetie> appartamentAmeneties = db.AppartamentAmeneties
+                        .Where(amenetie => amenetie.AppartamentId == appartament.Id).ToList();
+                //List<string> ameneties = db.Ameneties
+                //        .Where(a => a.Id == appartamentAmeneties.Select(aa => aa.AmenetieId).Contains(a.Id))
+                //        .Select(amenetie => a)
                 AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, user, imageNames);
                 appartamentDTOs.Add(appartamentDTO);
             }
