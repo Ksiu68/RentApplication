@@ -45,9 +45,7 @@ namespace RentApplication.Models.EF
         public decimal Price { get; set; }
 
         [Required(ErrorMessage = "Password is required")]
-        public string ImageBase64 { get; set; }
-        
-        public string ImageName { get; set; }
+        public List<ImageDTO> imageDTOs {get; set;}
         public List<string> Amenities {get;set;} 
     }
 }

@@ -42,15 +42,6 @@ namespace RentApplication.Controllers
         [Route("make")]
         public async Task<IActionResult> makeAnnouncement([FromBody] AnnouncementModel model)
         {
-            string imagePath = await createImageAsync(model.ImageBase64, model.ImageName);
-            if(imagePath.Equals("Fail")) return BadRequest(new Response { Status = "Bad", Message = "Image was not uploaded!" });
-            Image image = new Image()
-            {
-                ImagePath = imagePath
-            };
-            var imageResult = await db.Images.AddAsync(image);
-            await db.SaveChangesAsync();
-            if (imageResult == null) return BadRequest(new Response { Status = "Bad", Message = "Image was not created!" });
             House house = new House()
             {
                 Address = model.Address,
@@ -100,14 +91,25 @@ namespace RentApplication.Controllers
             };
             var appartamentResult = await db.Appartaments.AddAsync(appartament);
             await db.SaveChangesAsync();
-            ImageAppartament imageAppartament = new ImageAppartament()
-            {
-                AppartamentId = appartament.Id,
-                ImageId = image.Id
-            };
-            var ImageResult = await db.ImageAppartaments.AddAsync(imageAppartament);
-            await db.SaveChangesAsync();
-            if (ImageResult == null) return BadRequest(new Response { Status = "Bad", Message = "Image was not created!" });
+            foreach(ImageDTO imageDTO in model.imageDTOs){
+                string imagePath = await createImageAsync(imageDTO.ImageBase64, imageDTO.ImageName);
+                if(imagePath.Equals("Fail")) return BadRequest(new Response { Status = "Bad", Message = "Image was not uploaded!" });
+                Image image = new Image()
+                {
+                    ImagePath = imagePath
+                };
+                var imageResult = await db.Images.AddAsync(image);
+                await db.SaveChangesAsync();
+                if (imageResult == null) return BadRequest(new Response { Status = "Bad", Message = "Image was not created!" });
+                 ImageAppartament imageAppartament = new ImageAppartament()
+                {
+                    AppartamentId = appartament.Id,
+                    ImageId = image.Id
+                };
+                var ImageResult = await db.ImageAppartaments.AddAsync(imageAppartament);
+                await db.SaveChangesAsync();
+                if (ImageResult == null) return BadRequest(new Response { Status = "Bad", Message = "Image was not created!" });
+            }
             foreach(string amenetie in model.Amenities){
                  AppartamentAmenetie appartamentAmenetie = new AppartamentAmenetie()
                 {

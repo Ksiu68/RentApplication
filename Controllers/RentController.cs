@@ -69,6 +69,18 @@ namespace RentApplication.Controllers
         }
 
         [Authorize]
+        [HttpGet]
+        [Route("getRents")]
+        public async Task<IActionResult> getRents()
+        {
+            var userName = User.FindFirstValue(ClaimTypes.Name);
+            var user = await userManager.FindByNameAsync(userName);
+            var customer = await db.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
+            List<Order> orders = db.Orders.Where(o => o.CustomerId == customer.Id).ToList();
+            return Ok(orders);
+        }
+
+        [Authorize]
         [HttpPost]
         [Route("makeReview")]
         public async Task<IActionResult> makeReview([FromBody] Review review)
@@ -88,6 +100,10 @@ namespace RentApplication.Controllers
                 db.Customers.Add(newCustomer);
                 await db.SaveChangesAsync();
                 userId = newCustomer.Id;
+            }
+            var order = db.Orders.Where(o => o.AppartamentId == review.AppartamentId && o.CustomerId == userId).FirstOrDefault();
+            if(order == null) { 
+                return BadRequest(new Response { Status = "Bad", Message = "You didn't rent this appartament!" });
             }
             review.CustomerId = userId;
             db.Reviews.Add(review);
