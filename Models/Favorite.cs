@@ -8,7 +8,6 @@ namespace RentApplication.Models
 {
     public class Favorite
     {
-        [Key]
         public int CustomerId { get; set; }
         public int AppartamentId { get; set; }
     }

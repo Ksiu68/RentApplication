@@ -10,7 +10,7 @@ public class AppartamentDTO : Appartament
     public int numberHouse { get; set; }
     public List<string> imageNames {get; set;}
 
-    public List<string> amanities {get;set;}
+    public List<string> ameneties {get;set;}
     public AppartamentDTO(Appartament appartament, House house, User user, List<string> imageNames)
     {
         Id = appartament.Id;      

@@ -172,9 +172,9 @@ namespace RentApplication.Controllers
                         .ToList();
                 List<AppartamentAmenetie> appartamentAmeneties = db.AppartamentAmeneties
                         .Where(amenetie => amenetie.AppartamentId == appartament.Id).ToList();
-                //List<string> ameneties = db.Ameneties
-                //        .Where(a => a.Id == appartamentAmeneties.Select(aa => aa.AmenetieId).Contains(a.Id))
-                //        .Select(amenetie => a)
+                List<string> ameneties = db.Ameneties
+                        .Where(a => appartamentAmeneties.Select(aa => aa.AmenetieId).Contains(a.Id))
+                        .Select(a => a.Name).ToList();
                 AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, user, imageNames);
                 appartamentDTOs.Add(appartamentDTO);
             }

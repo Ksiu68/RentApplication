@@ -37,7 +37,7 @@ namespace RentApplication.Controllers
             var user = await userManager.FindByNameAsync(userName);
             int userId;
             var customer = await db.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
-
+            
             // Если запись существует, возвращаем её Id
             if (customer != null)
             {
