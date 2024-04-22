@@ -133,18 +133,9 @@ namespace RentApplication.Controllers
             if(diff.TotalHours <= 24){
                 return BadRequest(new Response { Status = "Fail", Message = "Time is less than 24 hours!" });
             }
-            Order orderReject = new Order()
-            {
-                CustomerId = order.CustomerId,
-                OwnerId = order.OwnerId,
-                AppartamentId = order.Id,
-                Price = order.Price,
-                Date = DateTime.Now,
-                DateStart = order.DateStart,
-                DateEnd = order.DateEnd,
-                Status = "Rejected"
-            };
-            db.Orders.Add(orderReject);
+            order.Status = "Rejected";
+            order.Date = DateTime.Now;
+            db.Orders.Update(order);
             db.SaveChanges();
             return Ok(new Response { Status = "Success", Message = "You rejected order!" });
         }
@@ -163,53 +154,19 @@ namespace RentApplication.Controllers
             if(diff.TotalHours < 0){
                 return BadRequest(new Response { Status = "Fail", Message = "You can't done yet this order!" });
             }
-            Order orderDone = new Order()
-            {
-                CustomerId = order.CustomerId,
-                OwnerId = order.OwnerId,
-                AppartamentId = order.Id,
-                Price = order.Price,
-                Date = DateTime.Now,
-                DateStart = order.DateStart,
-                DateEnd = order.DateEnd,
-                Status = "Done"
-            };
-            db.Orders.Add(orderDone);
+            order.Status = "Done";
+            order.Date = DateTime.Now;
+            db.Orders.Update(order);
             db.SaveChanges();
             return Ok(new Response { Status = "Success", Message = "You're done order!" });
         }
-
-        [HttpGet]
-        [Route("getCreatedOrders")]
-        public async Task<IActionResult> getCreatedOrders()
-        {
-            var userName = User.FindFirstValue(ClaimTypes.Name);
-            var user =  await userManager.FindByNameAsync(userName);
-            var customer = db.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
-            var activeOrders = db.Orders
-                .Where(o1 => o1.Status == "Created" &&
-                            !db.Orders.Any(o2 => o2.AppartamentId == o1.AppartamentId &&
-                                                o2.OwnerId == o1.OwnerId && o2.CustomerId == o1.CustomerId
-                                                && o2.Status != "Created"))
-                .Select(o => new
-                {
-                    DateStart = o.DateStart,
-                    DateEnd = o.DateEnd
-                })
-                .ToList();
-            return Ok(activeOrders);
-        }
-
 
         [HttpGet]
         [Route("getBusyDates/{appId}")]
         public IActionResult getBusyDates(int appId)
         {
             var activeOrders = db.Orders
-                .Where(o1 => o1.Status == "Created" &&
-                            !db.Orders.Any(o2 => o2.AppartamentId == o1.AppartamentId &&
-                                                o2.OwnerId == o1.OwnerId && o2.CustomerId == o1.CustomerId
-                                                && o2.Status != "Created"))
+                .Where(o1 => o1.Status == "Created" && o1.AppartamentId == appId)
                 .Select(o => new
                 {
                     DateStart = o.DateStart,
