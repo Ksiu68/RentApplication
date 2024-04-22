@@ -28,8 +28,8 @@ namespace RentApplication.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
         [Authorize]
-        [HttpPost("{apartamentId}")]
-        [Route("addToFavorite")]
+        [HttpPost]
+        [Route("addToFavorite/{appartamentId}")]
         public async Task<IActionResult> addToFavorite(int appartamentId)
         {
             Appartament appartament = db.Appartaments.FindAsync(appartamentId).Result;
@@ -61,8 +61,8 @@ namespace RentApplication.Controllers
             return Ok(new Response { Status = "Success", Message = "Added to favorite successfully!" });
         }
         [Authorize]
-        [HttpPost("{apartamentId}")]
-        [Route("removeToFavorite")]
+        [HttpPost]
+        [Route("removeToFavorite/{appartamentId}")]
         public async Task<IActionResult> removeFromFavorite(int appartamentId)
         {
             Favorite favoriteAppartament = db.Favorites

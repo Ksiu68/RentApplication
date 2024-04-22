@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>АрендуйУют</title>
+  <link rel="stylesheet" href="menu.css">
+  <link rel="stylesheet" href="catalog.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="menus">
+    <nav class="top-menu">
+      <a class="navbar-logo" href=""><img src="images/Screenshot_1.png" height="65px"></a>
+      <ul class="menu-main">
+        <li><a href="index.html">Главная</a></li>
+        <li><a href="">Каталог</a></li>
+        <li><a href="">Контакты</a></li>
+        <li><a href=""><button>+ Разместить объявление</button></a></li>
+        <li>
+          <div class="d5">
+            <form id="form">
+              <input type="search" id="searchInput" placeholder="Поиск..." style="color: black;">
+              <!-- <button type="submit"></button> -->
+            </form>
+          </div>
+        </li>
+        <li><a href="login.html">Войти</a></li>
+    
+    </nav>
+        <br>
+        <div class="filters">
+             <!-- Кнопка "Фильтры" -->
+             <li class="filter-dropdown">
+                <button onclick="openModal()" class="filter-button"><img src="icons/filter.png" class="filter-icon">Фильтры</button>
+            </li>
+            
+        <!-- Кнопки с раскрывающимся списком -->
+        <li class="filter-dropdown">
+          <select class="filter-select">
+            <option value="">Комнат</option>
+            <option value="option1">1</option>
+            <option value="option2">2</option>
+            <option value="option3">3</option>
+            <option value="option3">4+</option>
+          </select>
+        </li>
+        <li class="filter-dropdown">
+          <select class="filter-select">
+            <option value="">Метро</option>
+            <option value="option1">Опция 1</option>
+            <option value="option2">Опция 2</option>
+            <option value="option3">Опция 3</option>
+          </select>
+        </li>
+        <li class="filter-dropdown">
+          <select class="filter-select">
+            <option value="">Район</option>
+            <option value="option1">Опция 1</option>
+            <option value="option2">Опция 2</option>
+            <option value="option3">Опция 3</option>
+          </select>
+        </li>
+        <li class="filter-dropdown">
+          <select class="filter-select">
+            <option value="">Цена</option>
+            <option value="option1">Опция 1</option>
+            <option value="option2">Опция 2</option>
+            <option value="option3">Опция 3</option>
+          </select>
+        </li>
+      </ul>
+    </div>
+    </div>
+    <!-- Модальное окно -->
+    <div id="myModal" class="modal">
+      <div class="modal-content">
+        <!-- Здесь добавьте ваши кнопки для дополнительных фильтров -->
+        <button class="filter-button">Фильтр 1</button>
+        <button class="filter-button">Фильтр 2</button>
+        <button class="filter-button">Фильтр 3</button>
+        <button class="filter-button">Фильтр 4</button>
+        <button onclick="closeModal()">Закрыть</button>
+      </div>
+    </div>
+    <li class="filter-dropdown">
+      <select class="filter-select" style="width: 120%; text-align: left; padding-left: 20px; margin-left: 190px; margin-top: 40px; margin-bottom: -5px; margin-right: -183px;">
+        <option value="">По дате публикации</option>
+        <!-- <option value="option1">Рекомендуемые</option> -->
+        <option value="option2">Сначала дешевые</option>
+        <option value="option3">Сначала дорогие</option>
+      </select>
+    </li>
+    <main id="apartments-list">
+      
+    </main>
+    
+    <script>
+      // Функция для открытия модального окна
+      function openModal() {
+        var modal = document.getElementById("myModal");
+        modal.style.display = "block";
+      }
+
+      // Функция для закрытия модального окна
+      function closeModal() {
+        var modal = document.getElementById("myModal");
+        modal.style.display = "none";
+      }
+      document.addEventListener('DOMContentLoaded', function() {
+  var searchInput = document.getElementById('searchInput');
+ 
+
+
+  // Обработчик события ввода в поле поиска
+  searchInput.addEventListener('input', function() {
+    var searchText = searchInput.value.trim(); // Получаем введенный текст и удаляем лишние пробелы
+    if (searchText.length > 0) {
+      // Если введенный текст не пустой, отправляем запрос на сервер
+      searchAppartament(searchText);
+    } else {
+      // Если поле поиска пустое, очищаем предыдущие результаты
+      loadApartments();
+      clearResults();
+    }
+  });
+
+  function searchAppartament(searchText) {
+    // Отправляем GET-запрос на сервер, передавая введенный текст в качестве параметра
+    fetch('http://localhost:11732/api/appartament/searchAppartament/' + encodeURIComponent(searchText))
+      .then(function(response) {
+        return response.json(); // Преобразуем полученный ответ в формате JSON
+      })
+      .then(function(data) {
+        // Обрабатываем полученные данные
+        displayResults(data);
+      })
+      .catch(function(error) {
+        console.error('Ошибка при выполнении запроса:', error);
+      });
+  }
+
+  function displayResults(data) {
+    // Очищаем предыдущие результаты
+    clearResults();
+
+    // Проверяем, есть ли результаты поиска
+    if (data.length === 0) {
+      console.log('Квартиры не найдены');
+      return;
+    }
+
+    // Создаем элемент для списка результатов
+    var resultList = document.createElement('ul');
+
+    // Проходимся по каждой квартире в полученных данных и создаем элементы списка для отображения типа и адреса квартиры
+    data.forEach(function(apartment) {
+      var apartmentItem = document.createElement('div');
+              apartmentItem.classList.add('apartment-block');
+              apartmentItem.style.marginLeft = '150px'; // Добавляем стиль отступа от левой границы
+              apartmentItem.setAttribute('data-phone-number', apartment.phoneNumber);
+              // Создаем элемент <img> для первого изображения в массиве
+              var img = document.createElement('img');
+
+              // Формируем URL для запроса первого изображения по его имени
+              var firstImageUrl = `http://localhost:11732/api/appartament/getimage/${apartment.imageNames[0]}`;
+
+              // Устанавливаем src атрибут для изображения
+              img.src = firstImageUrl;
+
+              // Добавляем класс и альтернативный текст для изображения
+              img.classList.add('apartment-image');
+              img.alt = 'Фото квартиры';
+
+              // Добавляем изображение в блок объявления
+              apartmentItem.appendChild(img);
+              apartmentItem.innerHTML += `
+                  <a href="appartament.html?id=${apartment.id}" class="apartment-link">
+               
+                <div class="apartment-description">
+                  <div class="apartment-info">
+                      <div class="apartment-specs">${apartment.type}</div>
+                      <div class="apartment-address">${apartment.address}, ${apartment.numberHouse}</div>
+                      <div class="apartment-metro">
+                        <span class="metro-icon"></span>
+                        <span class="metro-station">${apartment.metro}</span><span class="metro-time">~${apartment.distanceToMetro}мин</span>
+                    </div>
+                      <div class="apartment-details">${apartment.description}</div>
+                      <div>${apartment.price}BYN/сут</div>
+                  </div>
+                  <img src="icons/favorite.png" alt="like icon">
+                  <button class="show-phone-btn">Показать телефон</button>
+              </div>
+          </a>
+              `;
+              resultList.appendChild(apartmentItem);
+            });
+    // Добавляем список результатов на страницу
+    document.body.appendChild(resultList);
+    
+  }
+
+  function clearResults() {
+  // Удаляем все блоки с квартирами
+  var apartmentBlocks = document.querySelectorAll('.apartment-block');
+  apartmentBlocks.forEach(function(apartmentBlock) {
+    apartmentBlock.remove();
+  });
+}
+});
+let apartmentId='';
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+      // Функция для загрузки списка объявлений
+      function loadApartments() {
+        $.ajax({
+          url: 'http://localhost:11732/api/appartament/getappartaments',
+          dataType: 'json',
+          headers: {
+    'Authorization': `Bearer ${token}` // Добавляем токен в заголовок
+  },
+          success: function(data) {
+            var apartmentsList = document.getElementById('apartments-list');
+            apartmentsList.innerHTML = ''; // Очистка текущего списка объявлений
+            data.forEach(function(apartment) {
+              var apartmentItem = document.createElement('div');
+              apartmentItem.classList.add('apartment-block');
+              apartmentItem.setAttribute('data-phone-number', apartment.phoneNumber);
+              // Создаем элемент <img> для первого изображения в массиве
+              var img = document.createElement('img');
+
+              // Формируем URL для запроса первого изображения по его имени
+              var firstImageUrl = `http://localhost:11732/api/appartament/getimage/${apartment.imageNames[0]}`;
+
+              // Устанавливаем src атрибут для изображения
+              img.src = firstImageUrl;
+
+              // Добавляем класс и альтернативный текст для изображения
+              img.classList.add('apartment-image');
+              img.alt = 'Фото квартиры';
+
+              // Добавляем изображение в блок объявления
+              apartmentItem.appendChild(img);
+              apartmentItem.innerHTML += `
+                  <a href="appartament.html?id=${apartment.id}" class="apartment-link">
+               
+                <div class="apartment-description">
+                  <div class="apartment-info">
+                      <div class="apartment-specs">${apartment.type}</div>
+                      <div class="apartment-address">${apartment.address}, ${apartment.numberHouse}</div>
+                      <div class="apartment-metro">
+                        <span class="metro-icon"></span>
+                        <span class="metro-station">${apartment.metro}</span><span class="metro-time">~${apartment.distanceToMetro}мин</span>
+                    </div>
+                      <div class="apartment-details">${apartment.description}</div>
+                      <div>${apartment.price}BYN/сут</div>
+                  </div>
+                  <button class="add-to-favorites-btn" data-apartment-id="${apartment.id}">В избранное</button>
+                  <button class="show-phone-btn">Показать телефон</button>
+              </div>
+          </a>
+              
+              `;
+              apartmentsList.appendChild(apartmentItem);
+            });
+             // Обработчик события для кнопок "В избранное"
+  $(document).on('click', '.add-to-favorites-btn', function(event) {
+    event.preventDefault(); // Предотвращаем переход по ссылке
+    apartmentId = $(this).data('apartment-id');
+    addToFavorites(apartmentId);
+  });
+  function addToFavorites(apartmentId) {
+  fetch(`http://localhost:11732/api/userpage/addToFavorite/?appartamentId=${apartmentId}`, {
+    method: 'POST', // Используем метод POST для отправки запроса
+    headers: {
+      'Content-Type': 'application/json', // Указываем тип содержимого
+      'Authorization': `Bearer ${token}` // Добавляем токен в заголовок
+    },
+    body: JSON.stringify({}) // Преобразуем пустой объект в формат JSON и отправляем его в теле запроса
+  })
+  .then(response => {
+    console.log('Объявление успешно добавлено в избранное');
+  })
+  .catch(error => {
+    console.error('Ошибка при добавлении объявления в избранное:', error);
+  });
+}
+
+            // Обработчик изменения значения выпадающего списка
+$('.filter-select').change(function(searchParams) {
+
+    var sortBy = $(this).val();
+    // Если выбрано "По дате публикации", повторно загружаем объявления
+    if (sortBy === '') {
+        loadApartments(); // Вызываем функцию загрузки объявлений
+        return; // Прерываем выполнение обработчика события
+    }
+    var sortedData = data.slice();
+
+    function sortByPriceLowToHigh(a, b) {
+        return a.price - b.price;
+    }
+
+    function sortByPriceHighToLow(a, b) {
+        return b.price - a.price;
+    }
+
+    if (sortBy === 'option2') {
+        sortedData.sort(sortByPriceLowToHigh);
+    } else if (sortBy === 'option3') {
+        sortedData.sort(sortByPriceHighToLow);
+    }
+
+    var apartmentsList = document.getElementById('apartments-list');
+    apartmentsList.innerHTML = '';
+
+    sortedData.forEach(function(apartment) {
+        var apartmentItem = document.createElement('div');
+        apartmentItem.classList.add('apartment-block');
+        apartmentItem.setAttribute('data-phone-number', apartment.phoneNumber);
+        var img = document.createElement('img');
+        var firstImageUrl = `http://localhost:11732/api/appartament/getimage/${apartment.imageNames[0]}`;
+        img.src = firstImageUrl;
+        img.classList.add('apartment-image');
+        img.alt = 'Фото квартиры';
+        apartmentItem.appendChild(img);
+        apartmentItem.innerHTML += `
+            <a href="appartament.html?id=${apartment.id}" class="apartment-link">
+            <div class="apartment-description">
+                <div class="apartment-info">
+                    <div class="apartment-specs">${apartment.type}</div>
+                    <div class="apartment-address">${apartment.address}, ${apartment.numberHouse}</div>
+                    <div class="apartment-metro">
+                        <span class="metro-icon"></span>
+                        <span class="metro-station">${apartment.metro}</span><span class="metro-time">~${apartment.distanceToMetro}мин</span>
+                    </div>
+                    <div class="apartment-details">${apartment.description}</div>
+                    <div>${apartment.price}BYN/сут</div>
+                </div>
+                <button class="show-phone-btn">Показать телефон</button>
+            </div>
+            </a>
+        `;
+        
+        apartmentsList.appendChild(apartmentItem);
+        });
+        });
+          },
+
+          error: function(xhr, status, error) {
+            console.error('Ошибка при загрузке объявлений:', error);
+          }
+        });
+      }
+     
+      // Загрузить список объявлений при загрузке страницы
+      window.onload = loadApartments;
+      
+      // Обработчик клика по кнопке "Показать телефон"
+      $(document).ready(function() {
+      $(document).on('click', '.show-phone-btn', function(event) {
+          event.preventDefault(); // Отменить стандартное действие по клику (переход по ссылке)
+
+          // Найти ближайший родительский элемент с классом 'apartment-block'
+          var apartmentBlock = $(this).closest('.apartment-block');
+
+          // Получить номер телефона из атрибута данных
+          var phoneNumber = apartmentBlock.data('phone-number');
+
+          // Заменить кнопку на номер телефона
+          $(this).replaceWith('<span class="phone-number">' + phoneNumber + '</span>');
+      });
+      });
+    
+    </script>
+</body>
+</html>
