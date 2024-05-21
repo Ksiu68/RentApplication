@@ -115,8 +115,26 @@ namespace RentApplication.Controllers
         [Route("getReviews/{appId}")]
         public IActionResult getReviews(int appId)
         {
+            List<ReviewDTO> reviewDTOs = new List<ReviewDTO>();
             List<Review> reviews = db.Reviews.Where(r => r.AppartamentId == appId).ToList();
-            return Ok(reviews);
+            foreach(Review review in reviews)
+            {
+                Order order = db.Orders.Where(o => o.CustomerId == review.CustomerId && o.AppartamentId == review.AppartamentId).FirstOrDefault();
+                Customer customer = db.Customers.Where(c => c.Id == review.CustomerId).FirstOrDefault();
+                User user = db.Users.Where(u => u.Id == customer.UserId).FirstOrDefault();
+                ReviewDTO reviewDTO = new ReviewDTO()
+                {
+                    Id = review.Id,
+                    Text = review.Text,
+                    Stars = review.Stars,
+                    DateStart = order.DateStart,
+                    DateEnd = order.DateEnd,
+                    UserName = user.UserName,
+                    ImageName = user.ImagePath.Replace("uploads\\", "")
+                };
+                reviewDTOs.Add(reviewDTO);
+            }
+            return Ok(reviewDTOs);
         }
 
         [HttpPost]
