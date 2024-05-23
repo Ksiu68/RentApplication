@@ -83,7 +83,8 @@ namespace RentApplication.Controllers
                 SecurityStamp = Guid.NewGuid().ToString(),
                 UserName = model.Username,
                 FIO = model.FIO,
-                PhoneNumber = model.Phone
+                PhoneNumber = model.Phone,
+                ImagePath = "uploads\\gray"
             };
             var result = await userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)

@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -72,6 +73,32 @@ namespace RentApplication.Controllers
             db.Favorites.Remove(favoriteAppartament);
             await db.SaveChangesAsync();
             return Ok(new Response { Status = "Success", Message = "Removed from favorite successfully!" });
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("getFavorites")]
+        public async Task<IActionResult> getFavorites()
+        {
+            var userName = User.FindFirstValue(ClaimTypes.Name);
+            var userId = await userManager.FindByNameAsync(userName);
+            User user = db.Users.Where(u => u.Id == userId.Id).FirstOrDefault();
+            Customer customer = db.Customers.Where(c => c.UserId == user.Id).FirstOrDefault();
+            List<Favorite> favorites = db.Favorites.Where(f => f.CustomerId == customer.Id).ToList();
+            //List<AppartamentDTO> appartamentDTOs = new List<AppartamentDTO>();
+            //foreach (Favorite favorite in favorites)
+            //{
+            //    using (HttpClient client = new HttpClient())
+            //    {
+            //        HttpResponseMessage response = await client.GetAsync("http://localhost:11732/api/appartament/getAppartament/" + favorite.AppartamentId);
+
+            //        if (response.IsSuccessStatusCode)
+            //        {
+            //            appartamentDTOs.Add(response.Content.ReadAsStringAsync());
+            //        }
+            //    }
+            //}
+            return Ok(favorites);
         }
 
         [Authorize]
