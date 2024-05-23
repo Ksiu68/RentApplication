@@ -90,6 +90,8 @@ namespace RentApplication.Controllers
                 ImageName = user.ImagePath.Replace("uploads\\", ""),
                 Username = user.UserName
             };
+            IdentityResult identityResult = await userManager.AddToRoleAsync(user, UserRoles.Admin);
+
             return Ok(userDTO);
         }
 
