@@ -75,7 +75,20 @@ namespace RentApplication.Controllers
             await db.SaveChangesAsync();
             return Ok(new Response { Status = "Success", Message = "Removed from favorite successfully!" });
         }
+        [HttpGet("role")]
+        [Authorize]
+        public IActionResult GetUserRole()
+        {
+            var userClaims = User.Claims;
 
+            var roleClaim = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+            if (roleClaim != null)
+            {
+                return Ok(new { Role = roleClaim.Value });
+            }
+
+            return NotFound("Role not found for the user.");
+        }
         [Authorize]
         [HttpGet]
         [Route("getFavorites")]
