@@ -14,9 +14,10 @@ public class AdminController : Controller
 {
     private ApplicationContext db;
     private readonly UserManager<User> userManager;
-    public AdminController(ApplicationContext db)
+    public AdminController(ApplicationContext db, UserManager<User> userManager)
     {
         this.db = db;
+        this.userManager = userManager;
     }
 
     // GET: api/User

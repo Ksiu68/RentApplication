@@ -37,25 +37,26 @@ namespace RentApplication.Controllers
             Appartament appartament = db.Appartaments.FindAsync(appartamentId).Result;
             var userName = User.FindFirstValue(ClaimTypes.Name);
             var user = await userManager.FindByNameAsync(userName);
-            int userId;
-            var customer = await db.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
+            IdentityResult identityResult = await userManager.AddToRoleAsync(user, UserRoles.Customer);
+        //    int userId;
+        //    var customer = await db.Users.FirstOrDefaultAsync(c => c.UserId == user.Id);
             
             // Если запись существует, возвращаем её Id
-            if (customer != null)
-            {
-                userId = customer.Id;
-            }
-            else
-            {
-                // Если запись не существует, создаем новую запись
-                var newCustomer = new Customer { UserId = user.Id };
-                db.Customers.Add(newCustomer);
-                await db.SaveChangesAsync();
-                userId = newCustomer.Id;
-            }
+            // if (customer != null)
+            // {
+            //     userId = customer.Id;
+            // }
+            // else
+            // {
+            //     // Если запись не существует, создаем новую запись
+            //     var newCustomer = new Customer { UserId = user.Id };
+            //     db.Customers.Add(newCustomer);
+            //     await db.SaveChangesAsync();
+            //     userId = newCustomer.Id;
+            // }
             Favorite favoriteAppartament = new Favorite()
             {
-                CustomerId = userId,
+                UserId = user.Id,
                 AppartamentId = appartament.Id
             };
             db.Favorites.Add(favoriteAppartament);
@@ -83,8 +84,7 @@ namespace RentApplication.Controllers
             var userName = User.FindFirstValue(ClaimTypes.Name);
             var userId = await userManager.FindByNameAsync(userName);
             User user = db.Users.Where(u => u.Id == userId.Id).FirstOrDefault();
-            Customer customer = db.Customers.Where(c => c.UserId == user.Id).FirstOrDefault();
-            List<Favorite> favorites = db.Favorites.Where(f => f.CustomerId == customer.Id).ToList();
+            List<Favorite> favorites = db.Favorites.Where(f => f.UserId == user.Id).ToList();
             //List<AppartamentDTO> appartamentDTOs = new List<AppartamentDTO>();
             //foreach (Favorite favorite in favorites)
             //{
@@ -117,7 +117,7 @@ namespace RentApplication.Controllers
                 ImageName = user.ImagePath.Replace("uploads\\", ""),
                 Username = user.UserName
             };
-            IdentityResult identityResult = await userManager.AddToRoleAsync(user, UserRoles.Admin);
+            //IdentityResult identityResult = await userManager.AddToRoleAsync(user, UserRoles.Admin);
 
             return Ok(userDTO);
         }
@@ -131,15 +131,15 @@ namespace RentApplication.Controllers
             var userId = await userManager.FindByNameAsync(userName);
             string imagePath = await createImageAsync(imageDTO.ImageBase64, imageDTO.ImageName);
             if(imagePath.Equals("Fail")) return BadRequest(new Response { Status = "Bad", Message = "Image was not uploaded!" });
-            Image image = new Image()
-            {
-                ImagePath = imagePath
-            };
-            var imageResult = await db.Images.AddAsync(image);
-            await db.SaveChangesAsync();
-            if (imageResult == null) return BadRequest(new Response { Status = "Bad", Message = "Image was not created!" });
+            // Image image = new Image()
+            // {
+            //     ImagePath = imagePath
+            // };
+            //var imageResult = await db.Images.AddAsync(image);
+            //await db.SaveChangesAsync();
+            //if (imageResult == null) return BadRequest(new Response { Status = "Bad", Message = "Image was not created!" });
             User user = db.Users.Where(u => u.Id == userId.Id).FirstOrDefault();
-            user.ImagePath = image.ImagePath;
+            user.ImagePath = imagePath;
             var userResult = db.Users.Update(user);
             await db.SaveChangesAsync();
             if (userResult == null) return BadRequest(new Response { Status = "Bad", Message = "Image was not created!" });

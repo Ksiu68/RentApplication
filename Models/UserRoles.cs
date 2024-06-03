@@ -9,5 +9,7 @@ namespace RentApplication.Models
     {
         public const string Admin = "Admin";
         public const string User = "User";
+        public const string Customer = "Customer";
+        public const string Owner = "Owner";
     }
 }

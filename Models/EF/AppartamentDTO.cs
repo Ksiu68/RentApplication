@@ -19,7 +19,7 @@ public class AppartamentDTO : Appartament
     public string numberOfFloors { get; set; }
     public string yearOfConstruction{get;set;}
     public string FIO {get; set;}
-    public AppartamentDTO(Appartament appartament, House house, User user, List<string> imageNames, List<string> ameneties)
+    public AppartamentDTO(Appartament appartament, Place house, User user, List<string> imageNames, List<string> ameneties)
     {
         Id = appartament.Id;      
         Description = appartament.Description;

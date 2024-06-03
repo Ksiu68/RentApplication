@@ -35,8 +35,8 @@ namespace RentApplication.Controllers
         {
             var userName = User.FindFirstValue(ClaimTypes.Name);
             var user = await userManager.FindByNameAsync(userName);
-            Owner owner = db.Owners.Where(o => o.UserId.Equals(user.Id)).First();
-            List<Appartament> appartaments = db.Appartaments.Where(a => a.OwnerId == owner.Id).ToList();
+            User owner = db.Users.Where(o => o.Id.Equals(user.Id)).First();
+            List<Appartament> appartaments = db.Appartaments.Where(a => a.UserId == owner.Id).ToList();
             return Ok(appartaments);
         }
 
@@ -45,23 +45,24 @@ namespace RentApplication.Controllers
         public async Task<IActionResult> removeAnnouncement(int appartamentId)
         {
             Appartament appartament = db.Appartaments.FindAsync(appartamentId).Result;
-            House house = db.Houses.FindAsync(appartament.HouseId).Result;
-            Owner owner = db.Owners.FindAsync(appartament.OwnerId).Result;
-            List<ImageAppartament> imageApps = db.ImageAppartaments.Where(i => i.AppartamentId == appartament.Id).ToList();
-            List<Image> images = db.Images.Where(image => imageApps.Select(ia => ia.ImageId).Contains(image.Id)).ToList();
+            Place house = db.Places.FindAsync(appartament.PlaceId).Result;
+            User owner = db.Users.FindAsync(appartament.UserId).Result;
+            List<Image> imageApps = db.Images.Where(i => i.AppartamentId == appartament.Id).ToList();
+            List<Image> images = db.Images.Where(image => imageApps.Select(ia => ia.Id).Contains(image.Id)).ToList();
 
-            if (db.Appartaments.Where(a => a.OwnerId == appartament.OwnerId).Count() == 1)
+            if (db.Appartaments.Where(a => a.UserId == appartament.UserId).Count() == 1)
             {
-                db.Owners.Remove(owner);
-                await db.SaveChangesAsync();
+                IdentityResult identityResult = await userManager.RemoveFromRoleAsync(owner, UserRoles.Owner);
+                // db.Users.Remove(owner);
+                // await db.SaveChangesAsync();
             }
 
-            db.Houses.Remove(house);
+            db.Places.Remove(house);
             await db.SaveChangesAsync();
-            db.ImageAppartaments.RemoveRange(imageApps);
+            db.Images.RemoveRange(imageApps);
             await db.SaveChangesAsync();
-            db.Images.RemoveRange(images);
-            await db.SaveChangesAsync();
+            // db.Images.RemoveRange(images);
+            // await db.SaveChangesAsync();
 
             if (appartament == null)
             {

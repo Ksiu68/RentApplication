@@ -36,26 +36,28 @@ namespace RentApplication.Controllers
             Appartament appartament = db.Appartaments.FindAsync(appartamentId).Result;
             var userName = User.FindFirstValue(ClaimTypes.Name);
             var user = await userManager.FindByNameAsync(userName);
-            int userId;
-            var customer = await db.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
+            IdentityResult identityResult = await userManager.RemoveFromRoleAsync(user, UserRoles.Customer);
 
-            // Если запись существует, возвращаем её Id
-            if (customer != null)
-            {
-                userId = customer.Id;
-            }
-            else
-            {
-                // Если запись не существует, создаем новую запись
-                var newCustomer = new Customer { UserId = user.Id };
-                db.Customers.Add(newCustomer);
-                await db.SaveChangesAsync();
-                userId = newCustomer.Id;
-            }
+            // int userId;
+            // var customer = await db.Users.FirstOrDefaultAsync(c => c.UserId == user.Id);
+
+            // // Если запись существует, возвращаем её Id
+            // if (customer != null)
+            // {
+            //     userId = customer.Id;
+            // }
+            // else
+            // {
+            //     // Если запись не существует, создаем новую запись
+            //     var newCustomer = new Customer { UserId = user.Id };
+            //     db.Customers.Add(newCustomer);
+            //     await db.SaveChangesAsync();
+            //     userId = newCustomer.Id;
+            // }
             Order order = new Order()
             {
-                CustomerId = userId,
-                OwnerId = appartament.OwnerId,
+                CustomerId = user.Id,
+                OwnerId = appartament.UserId,
                 AppartamentId = appartament.Id,
                 Price = getPrice(calendar, appartament.Price),
                 Date = DateTime.Now,
@@ -75,8 +77,8 @@ namespace RentApplication.Controllers
         {
             var userName = User.FindFirstValue(ClaimTypes.Name);
             var user = await userManager.FindByNameAsync(userName);
-            var customer = await db.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
-            List<Order> orders = db.Orders.Where(o => o.CustomerId == customer.Id).ToList();
+            // var customer = await db.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
+            List<Order> orders = db.Orders.Where(o => o.CustomerId == user.Id).ToList();
             return Ok(orders);
         }
 
@@ -87,25 +89,26 @@ namespace RentApplication.Controllers
         {
             var userName = User.FindFirstValue(ClaimTypes.Name);
             var user = await userManager.FindByNameAsync(userName);
-            int userId;
-            var customer = await db.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
-            if (customer != null)
-            {
-                userId = customer.Id;
-            }
-            else
-            {
-                // Если запись не существует, создаем новую запись
-                var newCustomer = new Customer { UserId = user.Id };
-                db.Customers.Add(newCustomer);
-                await db.SaveChangesAsync();
-                userId = newCustomer.Id;
-            }
-            var order = db.Orders.Where(o => o.AppartamentId == review.AppartamentId && o.CustomerId == userId).FirstOrDefault();
+            IdentityResult identityResult = await userManager.RemoveFromRoleAsync(user, UserRoles.Customer);
+            // int userId;
+            // var customer = await db.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
+            // if (customer != null)
+            // {
+            //     userId = customer.Id;
+            // }
+            // else
+            // {
+            //     // Если запись не существует, создаем новую запись
+            //     var newCustomer = new Customer { UserId = user.Id };
+            //     db.Customers.Add(newCustomer);
+            //     await db.SaveChangesAsync();
+            //     userId = newCustomer.Id;
+            // }
+            var order = db.Orders.Where(o => o.AppartamentId == review.AppartamentId && o.CustomerId == user.Id).FirstOrDefault();
             if(order == null) { 
                 return BadRequest(new Response { Status = "Bad", Message = "You didn't rent this appartament!" });
             }
-            review.CustomerId = userId;
+            review.UserId = user.Id;
             db.Reviews.Add(review);
             await db.SaveChangesAsync();
             return Ok(new Response { Status = "Success", Message = "Review was add successfully!" });
@@ -119,9 +122,9 @@ namespace RentApplication.Controllers
             List<Review> reviews = db.Reviews.Where(r => r.AppartamentId == appId).ToList();
             foreach(Review review in reviews)
             {
-                Order order = db.Orders.Where(o => o.CustomerId == review.CustomerId && o.AppartamentId == review.AppartamentId).FirstOrDefault();
-                Customer customer = db.Customers.Where(c => c.Id == review.CustomerId).FirstOrDefault();
-                User user = db.Users.Where(u => u.Id == customer.UserId).FirstOrDefault();
+                Order order = db.Orders.Where(o => o.CustomerId == review.UserId && o.AppartamentId == review.AppartamentId).FirstOrDefault();
+                //Customer customer = db.Customers.Where(c => c.Id == review.CustomerId).FirstOrDefault();
+                User user = db.Users.Where(u => u.Id == review.UserId).FirstOrDefault();
                 ReviewDTO reviewDTO = new ReviewDTO()
                 {
                     Id = review.Id,

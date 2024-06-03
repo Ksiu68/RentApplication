@@ -114,6 +114,13 @@ namespace RentApplication
                 });
 
                 dbContext.SaveChanges();
+                dbContext.Types.AddRange(new List<Models.Type>
+                {
+                    new Models.Type { Name = "Комната"},
+                    new Models.Type { Name = "Квартира"},
+                    new Models.Type  {Name = "Дом"}
+                });
+                dbContext.SaveChanges();
             }
         }
     }

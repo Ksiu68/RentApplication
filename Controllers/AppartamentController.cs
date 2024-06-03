@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using RentApplication.Models;
 using RentApplication.Models.EF;
 using System;
@@ -28,6 +29,12 @@ namespace RentApplication.Controllers
             { 8, "Можно с детьми"},
             { 9, "Можно с животными"}
         };
+
+        private Dictionary<int, string> types = new Dictionary<int, string>(){
+            { 1, "Комната" },
+            { 2, "Квартира" },
+            { 3, "Дом" }
+        };
         private readonly UserManager<User> userManager;
         private ApplicationContext db;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -42,7 +49,7 @@ namespace RentApplication.Controllers
         [Route("make")]
         public async Task<IActionResult> makeAnnouncement([FromBody] AnnouncementModel model)
         {
-            House house = new House()
+            Place house = new Place()
             {
                 Address = model.Address,
                 Elevator = model.Elevator,
@@ -56,26 +63,29 @@ namespace RentApplication.Controllers
                 Metro = model.Metro,
                 DistanceToMetro = model.DistanceToMetro
             };
-            var houseResult = await db.Houses.AddAsync(house);
+            var houseResult = await db.Places.AddAsync(house);
             await db.SaveChangesAsync();
             if (houseResult == null) return BadRequest(new Response { Status = "Bad", Message = "House was not created!" });
             var userName = User.FindFirstValue(ClaimTypes.Name);
             var user = await userManager.FindByNameAsync(userName);
-            Owner owner = null;
-            if (db.Owners.Where(o => o.UserId.Equals(user.Id)).Count() != 1)
-            {
-                owner = new Owner()
-                {
-                    UserId = user.Id
-                };
-                var ownerResult = await db.Owners.AddAsync(owner);
-                await db.SaveChangesAsync();
-                if (ownerResult == null) return BadRequest(new Response { Status = "Bad", Message = "Owner was not created!" });
-            }
-            else
-            {
-                owner = db.Owners.FirstOrDefault(o => o.UserId.Equals(user.Id));
-            }
+            IdentityResult identityResult = await userManager.AddToRoleAsync(user, UserRoles.Owner);
+            // Owner owner = null;
+            // if (db.Owners.Where(o => o.UserId.Equals(user.Id)).Count() != 1)
+            // {
+            //     owner = new Owner()
+            //     {
+            //         UserId = user.Id
+            //     };
+            //     var ownerResult = await db.Owners.AddAsync(owner);
+            //     await db.SaveChangesAsync();
+            //     if (ownerResult == null) return BadRequest(new Response { Status = "Bad", Message = "Owner was not created!" });
+            // }
+            // else
+            // {
+            //     owner = db.Owners.FirstOrDefault(o => o.UserId.Equals(user.Id));
+            // }
+            Models.Type type = db.Types.Where(t => t.Name.Equals(model.Type)).FirstOrDefault();
+            if(type == null) return BadRequest(new Response { Status = "Bad", Message = "Bad Type" });
             Appartament appartament = new Appartament()
             {
                 Description = model.Description,
@@ -83,9 +93,9 @@ namespace RentApplication.Controllers
                 CountOfRooms = model.CountOfRooms,
                 Floor = model.Floor,
                 Price = model.Price,
-                HouseId = house.Id,
-                OwnerId = owner.Id,
-                Type = model.Type,
+                PlaceId = house.Id,
+                UserId = user.Id,
+                TypeId = type.Id,
                 ReferenceTo3D = model.ReferenceTo3D,
                 countOfBedrooms = model.CountOfBedrooms
             };
@@ -96,19 +106,20 @@ namespace RentApplication.Controllers
                 if(imagePath.Equals("Fail")) return BadRequest(new Response { Status = "Bad", Message = "Image was not uploaded!" });
                 Image image = new Image()
                 {
-                    ImagePath = imagePath
+                    ImagePath = imagePath,
+                    AppartamentId = appartament.Id
                 };
                 var imageResult = await db.Images.AddAsync(image);
                 await db.SaveChangesAsync();
                 if (imageResult == null) return BadRequest(new Response { Status = "Bad", Message = "Image was not created!" });
-                 ImageAppartament imageAppartament = new ImageAppartament()
-                {
-                    AppartamentId = appartament.Id,
-                    ImageId = image.Id
-                };
-                var ImageResult = await db.ImageAppartaments.AddAsync(imageAppartament);
-                await db.SaveChangesAsync();
-                if (ImageResult == null) return BadRequest(new Response { Status = "Bad", Message = "Image was not created!" });
+                //  ImageAppartament imageAppartament = new ImageAppartament()
+                // {
+                //     AppartamentId = appartament.Id,
+                //     ImageId = image.Id
+                // };
+                // var ImageResult = await db.ImageAppartaments.AddAsync(imageAppartament);
+                // await db.SaveChangesAsync();
+                // if (ImageResult == null) return BadRequest(new Response { Status = "Bad", Message = "Image was not created!" });
             }
             foreach(string amenetie in model.Amenities){
                  AppartamentAmenetie appartamentAmenetie = new AppartamentAmenetie()
@@ -125,7 +136,10 @@ namespace RentApplication.Controllers
         }
         [HttpGet]
         [Route("getAppartaments")]
-        public IActionResult getAppartaments(int? countOfRooms = null, decimal? maxPrice = null)
+        public IActionResult getAppartaments(int? countOfRooms = null, decimal? maxPrice = null, decimal? minPrice = null,
+            string? metro =null, string? area = null, string? amenetie = null,
+            string? parking = null, string? elevator = null, string? playground = null, 
+            string? houseArea = null, string? yearOfConstruction = null)
         {
             IQueryable<Appartament> query = db.Appartaments;
 
@@ -134,42 +148,88 @@ namespace RentApplication.Controllers
             {
                 query = query.Where(a => a.CountOfRooms == countOfRooms);
             }
-
+            if (minPrice.HasValue)
+            {
+                query = query.Where(a => a.Price >= minPrice);
+            }
             if (maxPrice.HasValue)
             {
                 query = query.Where(a => a.Price <= maxPrice);
             }
+           if (!string.IsNullOrEmpty(amenetie))
+            {
+                var amenetiesList = amenetie.Split(',').Select(int.Parse).ToList();
+                var appartamentIdsWithAllAmenities = db.AppartamentAmeneties
+                    .Where(aa => amenetiesList.Contains(aa.AmenetieId))
+                    .GroupBy(aa => aa.AppartamentId)
+                    .Where(g => g.Count() == amenetiesList.Count)
+                    .Select(g => g.Key)
+                    .ToList();
 
+                query = query.Where(a => appartamentIdsWithAllAmenities.Contains(a.Id));
+            }
+            if (!string.IsNullOrEmpty(parking))
+            {
+                query = query.Where(a => a.Place.Parking == parking);
+            }
+            if (!string.IsNullOrEmpty(elevator))
+            {
+                query = query.Where(a => a.Place.Elevator == elevator);
+            }
+            if (!string.IsNullOrEmpty(playground))
+            {
+                query = query.Where(a => a.Place.Playground == playground);
+            }
+            if (!string.IsNullOrEmpty(yearOfConstruction))
+            {
+                query = query.Where(a => a.Place.YearOfConstruction == yearOfConstruction);
+            }
+            if (!string.IsNullOrEmpty(houseArea))
+            {
+                query = query.Where(a => a.Place.Area == houseArea);
+            }
+
+            // Применяем фильтры по метро и району
+            if (!string.IsNullOrEmpty(metro))
+            {
+                var metroList = metro.Split(',');
+                query = query.Where(a => metroList.Contains(a.Place.Metro));
+            }
+            if (!string.IsNullOrEmpty(area))
+            {
+                var areaList = area.Split(',');
+                query = query.Where(a => areaList.Contains(a.Place.Area));
+            }
             List<AppartamentDTO> appartamentDTOs = new List<AppartamentDTO>();
             List<Appartament> appartaments = query.ToList();
             foreach(Appartament appartament in appartaments){
-                House house = db.Houses
-                    .Where(h => h.Id == appartament.HouseId)
+                Place house = db.Places
+                    .Where(h => h.Id == appartament.PlaceId)
                     .FirstOrDefault();
-
+                
                 if (house == null)
                 {
                     return StatusCode(500, "House data not found."); // Вернуть 500 Internal Server Error, если данные о доме не найдены
                 }
-                Owner owner = db.Owners
-                        .Where(o => o.Id == appartament.OwnerId)
+                User owner = db.Users
+                        .Where(o => o.Id == appartament.UserId)
                         .FirstOrDefault();
                 if (owner == null)
                 {
                     return StatusCode(500, "Owner data not found."); // Вернуть 500 Internal Server Error, если данные о доме не найдены
                 }
-                User user = db.Users
-                        .Where(u => u.Id == owner.UserId)
-                        .FirstOrDefault();
-                if (user == null)
-                {
-                    return StatusCode(500, "User data not found."); // Вернуть 500 Internal Server Error, если данные о доме не найдены
-                }
-                List<ImageAppartament> imageAppartament = db.ImageAppartaments
+                // User user = db.Users
+                //         .Where(u => u.Id == owner.UserId)
+                //         .FirstOrDefault();
+                // if (user == null)
+                // {
+                //     return StatusCode(500, "User data not found."); // Вернуть 500 Internal Server Error, если данные о доме не найдены
+                // }
+                List<Image> imageAppartament = db.Images
                         .Where(i => i.AppartamentId == appartament.Id)
                         .ToList();
                 List<string> imageNames = db.Images
-                        .Where(image => imageAppartament.Select(i => i.ImageId).Contains(image.Id))
+                        .Where(image => imageAppartament.Select(i => i.Id).Contains(image.Id))
                         .Select(image => image.ImagePath.Replace("uploads\\", ""))
                         .ToList();
                 List<AppartamentAmenetie> appartamentAmeneties = db.AppartamentAmeneties
@@ -177,7 +237,7 @@ namespace RentApplication.Controllers
                 List<string> ameneties = db.Ameneties
                         .Where(a => appartamentAmeneties.Select(aa => aa.AmenetieId).Contains(a.Id))
                         .Select(a => a.Name).ToList();
-                AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, user, imageNames, ameneties);
+                AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, owner, imageNames, ameneties);
                 appartamentDTOs.Add(appartamentDTO);
             }
             return Ok(appartamentDTOs);
@@ -189,7 +249,7 @@ namespace RentApplication.Controllers
         {
             string searchLower = text.ToLower();
             List<AppartamentDTO> appartamentDTOs = new List<AppartamentDTO>();
-            List<House> houses = db.Houses
+            List<Place> houses = db.Places
                     .Where(h => h.Area.ToLower().Contains(searchLower) || h.Address.ToLower().Contains(searchLower))
                     .ToList();
 
@@ -197,33 +257,33 @@ namespace RentApplication.Controllers
             {
                 return StatusCode(500, "House data not found."); 
             }
-            foreach(House house in houses){
+            foreach(Place house in houses){
                 Appartament appartament = db.Appartaments
-                .Where(a => a.HouseId == house.Id)
+                .Where(a => a.PlaceId == house.Id)
                 .FirstOrDefault();
                 if (appartament == null)
                 {
                     return StatusCode(500, "Appartament data not found."); 
                 }
-                Owner owner = db.Owners
-                        .Where(o => o.Id == appartament.OwnerId)
+                User owner = db.Users
+                        .Where(o => o.Id == appartament.UserId)
                         .FirstOrDefault();
                 if (owner == null)
                 {
                     return StatusCode(500, "Owner data not found."); 
                 }
-                User user = db.Users
-                        .Where(u => u.Id == owner.UserId)
-                        .FirstOrDefault();
-                if (user == null)
-                {
-                    return StatusCode(500, "User data not found.");
-                }
-                List<ImageAppartament> imageAppartament = db.ImageAppartaments
+                // User user = db.Users
+                //         .Where(u => u.Id == owner.UserId)
+                //         .FirstOrDefault();
+                // if (user == null)
+                // {
+                //     return StatusCode(500, "User data not found.");
+                // }
+                List<Image> imageAppartament = db.Images
                         .Where(i => i.AppartamentId == appartament.Id)
                         .ToList();
                 List<string> imageNames = db.Images
-                        .Where(image => imageAppartament.Select(i => i.ImageId).Contains(image.Id))
+                        .Where(image => imageAppartament.Select(i => i.Id).Contains(image.Id))
                         .Select(image => image.ImagePath.Replace("uploads\\", ""))
                         .ToList();
                 List<AppartamentAmenetie> appartamentAmeneties = db.AppartamentAmeneties
@@ -231,7 +291,7 @@ namespace RentApplication.Controllers
                 List<string> ameneties = db.Ameneties
                         .Where(a => appartamentAmeneties.Select(aa => aa.AmenetieId).Contains(a.Id))
                         .Select(a => a.Name).ToList();
-                AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, user, imageNames, ameneties);
+                AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, owner, imageNames, ameneties);
                 appartamentDTOs.Add(appartamentDTO);
             }
             return Ok(appartamentDTOs);
@@ -250,33 +310,33 @@ namespace RentApplication.Controllers
                 }
 
                 // Загрузить данные о доме для данной квартиры
-            House house = db.Houses
-                    .Where(h => h.Id == appartament.HouseId)
+            Place house = db.Places
+                    .Where(h => h.Id == appartament.PlaceId)
                     .FirstOrDefault();
 
             if (house == null)
             {
                 return StatusCode(500, "House data not found."); // Вернуть 500 Internal Server Error, если данные о доме не найдены
             }
-            Owner owner = db.Owners
-                    .Where(o => o.Id == appartament.OwnerId)
+            User owner = db.Users
+                    .Where(o => o.Id == appartament.UserId)
                     .FirstOrDefault();
             if (owner == null)
             {
                 return StatusCode(500, "Owner data not found."); // Вернуть 500 Internal Server Error, если данные о доме не найдены
             }
-            User user = db.Users
-                    .Where(u => u.Id == owner.UserId)
-                    .FirstOrDefault();
-            if (user == null)
-            {
-                return StatusCode(500, "User data not found."); // Вернуть 500 Internal Server Error, если данные о доме не найдены
-            }
-            List<ImageAppartament> imageAppartament = db.ImageAppartaments
+            // User user = db.Users
+            //         .Where(u => u.Id == owner.Id)
+            //         .FirstOrDefault();
+            // if (user == null)
+            // {
+            //     return StatusCode(500, "User data not found."); // Вернуть 500 Internal Server Error, если данные о доме не найдены
+            // }
+            List<Image> imageAppartament = db.Images
                     .Where(i => i.AppartamentId == appartament.Id)
                     .ToList();
             List<string> imageNames = db.Images
-                    .Where(image => imageAppartament.Select(i => i.ImageId).Contains(image.Id))
+                    .Where(image => imageAppartament.Select(i => i.Id).Contains(image.Id))
                      .Select(image => image.ImagePath.Replace("uploads\\", ""))
                     .ToList();
             List<AppartamentAmenetie> appartamentAmeneties = db.AppartamentAmeneties
@@ -284,7 +344,7 @@ namespace RentApplication.Controllers
             List<string> ameneties = db.Ameneties
                         .Where(a => appartamentAmeneties.Select(aa => aa.AmenetieId).Contains(a.Id))
                         .Select(a => a.Name).ToList();
-            AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, user, imageNames, ameneties);
+            AppartamentDTO appartamentDTO = new AppartamentDTO(appartament, house, owner, imageNames, ameneties);
             return Ok(appartamentDTO);
         }
         public async Task<string> createImageAsync(string imageBase64, string imageName)

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RentApplication.Models
 {
-    public class House
+    public class Place
     {
         [Key]
         public int Id { get; set; }
